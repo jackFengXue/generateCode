@@ -1,0 +1,19 @@
+package ${package}.dao.${moduleName};
+
+import ${package}.entity.${moduleName}.${className};
+import javax.persistence.Table;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
+
+/**
+ * @Description ${comments}
+ * @author ${author}
+ * @email ${email}
+ * @date ${datetime}
+ */
+@Repository  
+@Table(name = "${tableName}", catalog = "${databaseName}")  
+public interface ${className}Repository extends JpaRepository<${className}, String>,JpaSpecificationExecutor<${className}>{
+	
+}

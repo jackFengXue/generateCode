@@ -1,0 +1,23 @@
+package ${package}.service.${moduleName};
+
+import ${package}.entity.${moduleName}.${className};
+import ${package}.dao.${moduleName}.${className}Repository;
+import com.platform.framework.service.BaseServiceImpl;
+import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * @Description ${comments}
+ * @author ${author}
+ * @email ${email}
+ * @date ${datetime}
+ */
+ @Service
+public class ${className}Service extends BaseServiceImpl {
+
+    @Autowired
+    ${className}Repository ${classname}Repository;
+    
+    
+}
+
