@@ -28,14 +28,23 @@
     </div>  
  	
  	<!-- 查询条件定义开始 -->
-	<ul id="dynamicCondition" style="display:none;">      
-		<li field="pro_name" title="项目名称" edit="text" ops="like"></li>   
-		<li field="year" title="项目年度" edit="year" ops="equal" ></li>     
-		<li field="pro_manager_id" title="项目经理" edit="select" ops="equal" templet="#proManagerList"></li>            
-		<li field="pro_member_id" title="项目成员" edit="select" ops="like" templet="#proMemberList"></li>                
-		<li field="prov_code" title="省份" edit="select" ops="equal" templet="#provinceList"></li>         
-		<li field="owner" title="业主" edit="text" ops="like"></li>                
-		<li field="start_time" title="开始时间" edit="date" ops="equal,between"></li>   
+	<ul id="dynamicCondition" style="display:none;">   
+#foreach ($column in $columns)
+#if($column.columnName != $pk.columnName)
+#if($column.dataType == 'varchar')
+		<li field="$column.columnName" title="$column.comments" edit="text" ops="like"></li>   		
+#end 	
+#if($column.dataType == 'int')
+		<li field="$column.columnName" title="$column.comments" edit="text" ops="equal,between"></li>   		
+#end 	
+#if($column.dataType == 'decimal')
+		<li field="$column.columnName" title="$column.comments" edit="text" ops="equal,between"></li>   		
+#end 
+#if($column.attrType == 'Date')
+		<li field="$column.columnName" title="$column.comments" edit="date" ops="equal,between"></li>   		
+#end 
+#end          
+#end             
 	</ul>        
 	<!-- 查询条件定义结束 -->
 </body>     
@@ -132,6 +141,7 @@
       		  cols: [[  
       			  {type:'checkbox'},     
 #foreach ($column in $columns)
+#if($column.columnName != $pk.columnName)
 #if($column.attrType == 'Date')
 				  {field:'$column.attrname', title: '$column.comments',align:'center',templet :function (row){
 				        return parseDate(row.$column.attrname);        //转成日期格式  
@@ -141,6 +151,7 @@
 #if($column.attrType != 'Date')
   				  {field:'$column.attrname', title: '$column.comments',align:'center'}, 
 #end     
+#end                     
 #end                     
       		  ]],
       		  initSort: {        
@@ -194,7 +205,10 @@
         		  maxmin:true,
         		  fixed:false,
         		  area: ['660px', '635px'], //宽高                       
-        		  content: basePath+"${classname}/editPage"
+        		  content: basePath+"${classname}/editPage",   
+	    		  end: function () {
+	    			  refreshPage();
+	    		  }
         		});  
 	    	}else{     
 	    	    layer.msg("只能选择一行记录",{icon:7,time:1800});    
@@ -212,7 +226,10 @@
     		  maxmin:true,
     		  fixed:false,
     		  area: ['660px', '635px'], //宽高                       
-    		  content: basePath+"${classname}/addPage"
+    		  content: basePath+"${classname}/addPage",   
+    		  end: function () {
+    			  refreshPage();
+    		  }     
     		});
        }
 	   
