@@ -1,0 +1,229 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>                                            
+<title>主页面</title>              
+<block th:replace="commonBase"></block>      
+<!-- LayUI   -->  
+<link rel="stylesheet" th:href="@{/plugins/layui/css/layui.css}"/>  
+<script th:src="@{/plugins/layui/layui.js}" type="text/javascript"></script>       
+</head>  
+<body> 	  
+
+    <!-- 表格工具栏开始 -->   
+	<div id="toolBar"  style="display:none;">                                          
+       	<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add"><i class="fa fa-plus"></i>&nbsp;&nbsp;新增</button>
+       	<button class="layui-btn layui-btn-warm layui-btn-sm" lay-event="edit"><i class="fa fa-edit"></i>&nbsp;&nbsp;编辑</button>
+       	<button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="delete"><i class="fa fa-remove"></i>&nbsp;&nbsp;删除</button>       
+ 		<button class="layui-btn layui-btn-warm layui-btn-sm" id="search" lay-event="search" style="height:30px;"><i class="fa fa-search" ></i>&nbsp;&nbsp;选择查询</button>   
+    </div>              
+	<!-- 表格工具栏结束-->          
+       
+ 	<div style="padding: 0px; background-color: #F2F2F2;">    
+	    <!-- 显示查询条件div开始 -->   
+	    <div id="msg" style="position: absolute;left: 500px;top:15px;z-index: 1000;"></div>    
+	    <!-- 显示查询条件div结束 -->         
+	    
+	    <!-- 展示数据表格开始 -->
+	    <table class="layui-hide" id="table" lay-filter="table" style="height:100%"></table>
+	    <!-- 展示数据表格结束 -->       
+    </div>  
+ 	
+ 	<!-- 查询条件定义开始 -->
+	<ul id="dynamicCondition" style="display:none;">      
+		<li field="pro_name" title="项目名称" edit="text" ops="like"></li>   
+		<li field="year" title="项目年度" edit="year" ops="equal" ></li>     
+		<li field="pro_manager_id" title="项目经理" edit="select" ops="equal" templet="#proManagerList"></li>            
+		<li field="pro_member_id" title="项目成员" edit="select" ops="like" templet="#proMemberList"></li>                
+		<li field="prov_code" title="省份" edit="select" ops="equal" templet="#provinceList"></li>         
+		<li field="owner" title="业主" edit="text" ops="like"></li>                
+		<li field="start_time" title="开始时间" edit="date" ops="equal,between"></li>   
+	</ul>        
+	<!-- 查询条件定义结束 -->
+</body>     
+	<script th:inline="javascript" type="text/javascript">
+	/*<![CDATA[*/  
+	   layui.config({    
+		   base: basePath+'plugins/layui_exts/' //设定扩展的Layui模块的所在目录，一般用于外部模块扩展
+	   }).extend({
+		   dynamicCondition: 'dynamicCondition/dynamicCondition'
+	   }).use(['table','form','dynamicCondition'], function(){
+		   var table = layui.table, form = layui.form, dynamicCondition = layui.dynamicCondition;
+		   initTable(table,dynamicCondition);       //初始化渲染表格
+		   listenToolbar(table,dynamicCondition)    //监听工具栏事件的方法
+	   });   
+
+	   //监听工具栏事件的方法  
+	   function listenToolbar(table,dynamicCondition){
+       	 table.on('toolbar(table)', function(obj){ //头工具栏事件
+    		var checkStatus = table.checkStatus(obj.config.id);  
+    		var data = checkStatus.data;         
+    		switch(obj.event){   
+    	      case 'add':
+    	          add();         //新增
+    	      break;
+    	      case 'edit':
+    	    	  edit(data);   //编辑
+    	      break;
+    	      case 'delete':
+    	    	  deleteData(data);  //删除
+    	      break;
+			  case 'search':  
+				  search(table,dynamicCondition);     //搜索                   
+    	      break;
+    	   }    
+       	 })
+	   }
+	   
+	   //删除项目的方法
+	   function deleteData(data){
+		   if(data.length == 0){
+		      layer.msg("请选择需要删除的记录",{icon:7,time:1800});             
+		   }else{       
+			  var deleteArray = [];
+			  for(var i = 0;i < data.length;i++){
+				  deleteArray[i] = data[i].${pk.columnName};
+			  }
+			  layer.confirm('真的删除选中记录？',{title: "温馨提示"}, function(index){   
+				  if(deleteArray.length != 0){
+			       	  var ${pk.columnName}s = deleteArray.toString();
+			       	  toDelete(${pk.columnName}s);
+				  }
+				  layer.close(index);                
+			  });	  
+		   }   
+	   }  
+	   
+	   //向后台发送删除请求的方法
+	   function toDelete(${pk.columnName}s){
+		   $.ajax({      
+			 url: basePath+"${classname}/delete",	
+		     type:'post',
+	   		 data:{${pk.columnName}s:${pk.columnName}s},        
+	   		 cache:false,   
+	   		 success:function (successData){   
+	   			 var message = mini.decode(successData);           
+	   			 if(message.type=='200'){               
+	   				layer.msg('删除成功', {icon: 1,time: 1200},function(){
+	   					refreshPage();    //刷新页面的方法
+	   				});              
+	   			 }else{
+	   				layer.msg('删除失败，请稍后重试', {icon: 5,time: 2000});
+	   			 }
+	   		 },    
+	   		 error:function(XMLHttpRequest,textStatus,errorThrown){	
+	   			 layer.msg('删除错误，请稍后重试', {icon: 5,time: 2000});      
+	   		 }
+	   	  })
+	   }
+	   
+	   //刷新页面的方法
+	   function refreshPage(){
+		   location.reload();    
+	   }   
+       	 
+	   //初始化渲染表格
+	   function initTable(table,dynamicCondition){    
+			table.render({
+      		  elem: '#table',
+      		  url:basePath+"${classname}/list",
+      		  toolbar: '#toolBar',
+      		  defaultToolbar:['filter'],        
+      		  height:'full-0',        
+      		  method:"post",         
+      		  cols: [[  
+      			  {type:'checkbox'},     
+#foreach ($column in $columns)
+#if($column.attrType == 'Date')
+				  {field:'$column.attrname', title: '$column.comments',align:'center',templet :function (row){
+				        return parseDate(row.$column.attrname);        //转成日期格式  
+				     }  
+				  },      
+#end       
+#if($column.attrType != 'Date')
+  				  {field:'$column.attrname', title: '$column.comments',align:'center'}, 
+#end     
+#end                     
+      		  ]],
+      		  initSort: {        
+      		    field: '${pk.attrname}', //排序字段，对应 cols 设定的各字段名
+      		    type: 'desc'        //排序方式  asc: 升序、desc: 降序、null: 默认排序
+      		  },          
+      	 	  page: true,   
+      	 	  limit:20,              //默认二十条数据一页   
+      	 	  id:'tableId',   //此处定义的id用于后面查询重新加载使用
+      		  limits:[10,20,50,100]  //数据分页            
+           });      
+	   }
+		
+	   //搜索项目的方法
+	   function search(table,dynamicCondition){      
+		   var dcInstance = dynamicCondition.create({       
+			    type:"complex",                  //复杂模式查询
+			    elem:"#dynamicCondition",        //查询条件的id    
+				conditionTextId:"#msg",          //显示搜索条件的id区域
+				instanceName:  "complexInstance",//页面只有一个实例的时候可以不用设置，多个实例的时候必须设置  
+				queryCallBack:function(requestData){  
+					reloadTable(JSON.stringify(requestData),table); //重新加载表格数据的方法          
+				}
+ 			});          	  
+  		    dynamicCondition.getInstance("complexInstance").open(); //打开查询条件框
+	   }
+	   
+	   //重新加载表格数据的方法
+	   function reloadTable(requestData,table){     
+		    table.reload('tableId', {      //根据表格的id进行重新加载数据
+		        page: {
+		            curr: 1                //重新从第 1 页开始
+		        },
+		        where: {  
+		        	searchData: requestData        
+		        }
+		    });
+	   } 
+		
+	   //编辑项目的方法
+	   function edit(data){   
+	    	if(data.length == 0){
+	    	    layer.msg("请选择一行记录",{icon:7,time:1800});             
+	    	}else if(data.length == 1){    
+        	    parent.layer.open({      
+        		  type: 2,       
+        		  id:2,
+        		  title:'编辑记录',    
+        		  anim: 2,    
+        		  skin: 'layui-layer-lan',    
+        		  maxmin:true,
+        		  fixed:false,
+        		  area: ['660px', '635px'], //宽高                       
+        		  content: basePath+"${classname}/editPage"
+        		});  
+	    	}else{     
+	    	    layer.msg("只能选择一行记录",{icon:7,time:1800});    
+	    	}                         
+	   } 
+		
+	   //添加项目的方法
+       function add(){
+    	  parent.layer.open({      
+    		  type: 2,
+    		  id:1,
+    		  title:'新增信息',    
+    		  anim: 2,
+    		  skin: 'layui-layer-lan',
+    		  maxmin:true,
+    		  fixed:false,
+    		  area: ['660px', '635px'], //宽高                       
+    		  content: basePath+"${classname}/addPage"
+    		});
+       }
+	   
+	   //转成日期格式
+	   function parseDate(value){
+		   if(!value){
+			  return "";        
+		   }    
+		   return format(value,'yyyy-MM-dd'); 
+	   }
+	   
+	 /*]]>*/
+	</script>
+</html>

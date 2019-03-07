@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>添加页面</title>
+	<block th:replace="commonBase"></block>            
+	<link rel="stylesheet" th:href="@{/plugins/layui/css/layui.css}" media="all" />
+	<script th:src="@{/plugins/layui_exts/city-picker/city-picker.data.js}"></script>
+    <link th:href="@{/plugins/layui_exts/city-picker/city-picker.css}" rel="stylesheet" />
+	<style>
+		.layui-form-label{    
+		  width: 100px;
+	    }       
+	</style>     
+</head>
+<body>
+  <div style="padding: 20px; background-color: #F2F2F2;">
+	  <div class="layui-row layui-col-space15">
+	    <div class="layui-col-md12">
+	      <div class="layui-card">
+	        <div class="layui-card-body">
+	          	<form class="layui-form" action=""  lay-filter="form1">
+				  <div class="layui-form-item">
+				  	<label class="layui-form-label">项目名称</label>
+				    <div class="layui-input-block">
+				      <input type="text" name="proName" lay-verify="required" autocomplete="off" placeholder="请输入项目名称" class="layui-input" />
+				    </div>
+				  </div>
+				  <div class="layui-form-item">
+				  	<label class="layui-form-label">年度</label>
+				    <div class="layui-input-block">
+				      <input type="text" name="year" id="year" lay-verify="required" placeholder="yyyy" autocomplete="off" class="layui-input" />
+				    </div>  
+				  </div>
+				  <div class="layui-form-item">     
+				  	<label class="layui-form-label">项目经理</label>   
+				  	<div class="layui-input-block"> 
+				  	    <select name="proManager" id="proManager" lay-verify="required">
+						   <option value="">请选择项目经理</option>
+						</select>            
+				    </div>                
+				  </div>      
+				  <div class="layui-form-item">
+				  	<label class="layui-form-label">项目成员</label>    
+				    <div class="layui-input-block">  
+				        <div id="proMember"></div>                               
+				    </div>            
+				  </div>
+				  <div class="layui-form-item">
+				  	<label class="layui-form-label">省份</label>
+				    <div class="layui-input-block">             
+				        <input type="text" autocomplete="on" class="layui-input" id="provName" name="provName" readonly="readonly"  lay-verify="required" data-toggle="city-picker" placeholder="请选择省份">
+				    </div>
+				  </div>
+				  <div class="layui-form-item">
+				  	<label class="layui-form-label">业主</label>
+				    <div class="layui-input-block">
+				      <input type="text" name="owner" lay-verify="required" autocomplete="off" placeholder="请输入业主" class="layui-input" />
+				    </div>
+				  </div>
+				  <div class="layui-form-item">
+				  	<label class="layui-form-label">开始时间</label>
+				    <div class="layui-input-block">
+				      <input type="text" name="startTime" id="startTime" lay-verify="required" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input" />
+				    </div>
+				  </div>      
+				  <div class="layui-form-item">
+				  	<label class="layui-form-label">项目备注</label>    
+					<div class="layui-input-block">             
+				      <textarea name="remark" placeholder="请输入备注" class="layui-textarea"></textarea>
+				    </div>
+				  </div>
+				  <hr class="layui-bg-gray" />     
+				  <div class="layui-form-item" style="text-align: center;margin: auto auto;">    
+				   	<button class="layui-btn layui-btn-normal" lay-submit="" lay-filter="save"><i class="fa fa-save"></i>  保存</button>
+	   				<button type="button" class="layui-btn layui-btn-danger" onclick="parent.layer.closeAll();"><i class="fa fa-remove"></i>  关闭</button>
+				  </div>
+				</form>
+	        </div>         
+	      </div>
+	    </div>
+    </div>
+     <input name="userid" id="userid" class="mini-hidden" th:value="${user.id}"/>
+  </div>            
+  <script charset="UTF-8" th:src="@{/plugins/layui/layui.js}"></script> 
+           
+<script>            
+  var proMember = null;
+  var layer = null;
+  layui.config({
+	  base: basePath+'plugins/layui_exts/'    
+  }).extend({   
+      selectN: 'select/selectN',
+      selectM: 'select/selectM',
+      citypicker:'city-picker/city-picker'
+  }).use(['layer','form','jquery','layedit', 'laydate','selectN','selectM','citypicker'],function(){
+      $ = layui.jquery;	
+      var form = layui.form,
+      selectN = layui.selectN,
+      selectM = layui.selectM,
+	  layer = layui.layer,    
+	  layedit = layui.layedit,
+	  laydate = layui.laydate,
+	  selectM = layui.selectM, 
+      cityPicker = layui.citypicker;
+	  
+	  laydate.render({   //日期选择器
+	    elem: '#startTime'
+	  }); 
+	  laydate.render({   //年选择器
+	    elem: '#year',     
+	    type: 'year'
+	  });    
+	  getProManagerList();                              //得到项目经理列表的方法 
+	  getProMemberList(form,selectM,layer);             //得到项目成员列表的方法        
+	  var currentPicker= new cityPicker("#provName");   //省份下拉集合     
+	  form.on('submit(save)', function(data){                 
+		  submit(JSON.stringify(data.field),layer);   
+		  return false;
+	  });
+  });
+  
+  //得到项目经理集合的方法
+  function getProManagerList(){
+	  $.ajax({      
+		  url: basePath+"project/getProManagerList",
+		  dataType: 'json',     
+		  type: 'get',
+		  async:false,      
+		  success: function (data) {
+			  setProManager(data);            //设置项目经理下拉值
+		  },
+		  error:function(XMLHttpRequest,textStatus,errorThrown){       
+			  layer.msg('获取项目经理集合错误，请重新加载窗口', {icon: 5,time: 2000});               
+			  var data = "[]";
+			  setProManager(data);            //设置项目经理下拉值    
+ 		  }
+	  })      
+  }
+  
+  //得到项目成员列表的方法
+  function getProMemberList(form,selectM,layer){              
+	  $.ajax({      
+		  url: basePath+"project/getUserList",
+		  dataType: 'json',     
+		  type: 'get',
+		  async:false,      
+		  success: function (data) {
+			  setProMember(data,form,selectM);//设置项目成员下拉值  
+		  },
+		  error:function(XMLHttpRequest,textStatus,errorThrown){       
+			  layer.msg('获取项目成员集合错误，请重新加载窗口', {icon: 5,time: 2000});               
+			  var data = "[]";   
+			  setProMember(data,form,selectM);//设置项目成员下拉值
+ 		  }
+	  })      
+  }   
+  
+  //设置项目成员下拉值
+  function setProMember(data,form,selectM){     
+	  proMember = selectM({       //项目成员多选设置
+	      elem: '#proMember',    
+	      tips: '请选择项目成员 最多 {max} 个',	  
+	      max:10,        
+	      data:data,                 //得到用户集合的方法       
+	      verify:'required'      
+	  });          
+      form.render("select");
+  }     
+ 
+  //设置项目经理下拉值
+  function setProManager(data){
+	  var userid = mini.get("userid").getValue();   
+	  $.each(data, function (index, item) {      
+		 if(userid == item.id){
+		     $('#proManager').append(new Option(item.name, item.id)).val(item.id);// 默认选中登录用户   
+		 }else{
+		     $('#proManager').append(new Option(item.name, item.id));             // 下拉菜单里添加元素     
+		 }
+	  });         
+  }       
+  
+  //保存提交的方法
+  function submit(data,layer){  
+	 var proManagerName = $("#proManager option:selected").text();   //获取当前选择的项目经理文本值  
+	 var proMemberNames = proMember.names;                           //获取当前选中的项目成员文本值
+  	 $.ajax({
+   		 url:basePath+"project/addProject",
+   		 type:'post',
+   		 data:{data:data,proManagerName:proManagerName,proMemberNames:proMemberNames+""},        
+   		 cache:false,
+   		 success:function (successData){   
+   			 var message = mini.decode(successData);           
+   			 if(message.type=='200'){               
+   				layer.msg('项目添加成功', {icon: 1,time: 1200},function(){
+   					closeWin();
+   				});              
+   			 }else{
+   				layer.msg('项目添加失败，请稍后重试', {icon: 5,time: 2000});
+   			 }
+   		 },    
+   		 error:function(XMLHttpRequest,textStatus,errorThrown){	
+   			layer.msg('项目添加错误，请稍后重试', {icon: 5,time: 2000});   
+   		 }
+   	  })
+   }
+
+   //关闭页面
+   function closeWin(){
+	  var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+      parent.layer.close(index); //再执行关闭            
+	  parent.location.reload();  // 父页面刷新           
+   }
+      
+ 
+    
+    
+    
+    
+</script>
+
+
+  
+</body>
+</html>

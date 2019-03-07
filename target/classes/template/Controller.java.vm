@@ -22,13 +22,24 @@ public class ${className}Controller extends BaseController{
     @Autowired
     ${className}Service ${classname}Service;
     
+    /**
+	* @Description 跳转到${comments}主页面的方法
+	* @author ${author}
+	* @createDate ${datetime}
+	*/
+    @RequestMapping(value = "/index")
+	public ModelAndView index() {
+		ModelAndView mv = new ModelAndView("${moduleName}/${classname}/index");
+		return mv;
+	}
+    
    /**
 	* @Description 跳转到添加${comments}页面的方法
 	* @author ${author}
 	* @createDate ${datetime}
 	*/
-    @RequestMapping(value = "/add${className}Page")
-	public ModelAndView add${className}Page() {
+    @RequestMapping(value = "/addPage")
+	public ModelAndView addPage() {
 		ModelAndView mv = new ModelAndView("${moduleName}/${classname}/add");
 		return mv;
 	}
@@ -38,10 +49,10 @@ public class ${className}Controller extends BaseController{
 	 * @author ${author}
 	 * @createDate ${datetime}
 	 */
-	@RequestMapping(value="/add${className}",method= {RequestMethod.POST})
-	public String add${className}(HttpServletRequest request) {
+	@RequestMapping(value="/add",method= {RequestMethod.POST})
+	public String add(HttpServletRequest request) {
 		String data = request.getParameter("data");
-		return ${classname}Service.add${className}(data);
+		return ${classname}Service.add(data);
 	}
 	
 	/**
@@ -49,10 +60,10 @@ public class ${className}Controller extends BaseController{
 	 * @author ${author}
 	 * @createDate ${datetime}
 	 */
-	@RequestMapping(value="/delete${className}",method= {RequestMethod.POST})
-	public String delete${className}(HttpServletRequest request) {
+	@RequestMapping(value="/delete",method= {RequestMethod.POST})
+	public String delete(HttpServletRequest request) {
 		String ${pk.columnName}s = request.getParameter("${pk.columnName}s");
-		return ${classname}Service.delete${className}(${pk.columnName}s);
+		return ${classname}Service.delete(${pk.columnName}s);
 	}
 	
     /**
@@ -60,8 +71,8 @@ public class ${className}Controller extends BaseController{
 	 * @author ${author}
 	 * @createDate ${datetime}
 	 */
-	@RequestMapping(value = "/edit${className}Page")
-	public ModelAndView edit${className}Page() {
+	@RequestMapping(value = "/editPage")
+	public ModelAndView editPage() {
 		ModelAndView mv = new ModelAndView("${moduleName}/${classname}/edit");
 		return mv;
 	}
@@ -71,10 +82,10 @@ public class ${className}Controller extends BaseController{
 	 * @author ${author}
 	 * @createDate ${datetime}
 	 */
-	@RequestMapping(value="/edit${className}",method= {RequestMethod.POST})
-	public String edit${className}(HttpServletRequest request) {
+	@RequestMapping(value="/edit",method= {RequestMethod.POST})
+	public String edit(HttpServletRequest request) {
 		String data = request.getParameter("data");
-		return ${classname}Service.edit${className}(data);
+		return ${classname}Service.edit(data);
 	}
     
     /**

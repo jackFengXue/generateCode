@@ -51,8 +51,9 @@ public class GenUtils {
 		templates.add("template/Dao.java.vm");
 		templates.add("template/Service.java.vm");
 		templates.add("template/Controller.java.vm");
-		templates.add("template/list.html.vm");
-		templates.add("template/list.js.vm");
+		templates.add("template/index.html.vm");
+		templates.add("template/add.html.vm");
+		templates.add("template/edit.html.vm");
 		templates.add("template/menu.sql.vm");
 		return templates;
 	}
@@ -158,7 +159,7 @@ public class GenUtils {
 			
 			try {
 				//添加到zip
-				zip.putNextEntry(new ZipEntry(getFileName(template, tableEntity.getClassName(), config.getString("package"), config.getString("moduleName"))));
+				zip.putNextEntry(new ZipEntry(getFileName(template, tableEntity.getClassName(), config.getString("package"), config.getString("moduleName"),tableEntity.getClassname())));
 				IOUtils.write(sw.toString(), zip, "UTF-8");
 				IOUtils.closeQuietly(sw);
 				zip.closeEntry();
@@ -199,8 +200,10 @@ public class GenUtils {
 
 	/**
 	 * 获取文件名
+	 * className：开头大写的类名
+	 * classname：开头小写的类名
 	 */
-	public static String getFileName(String template, String className, String packageName, String moduleName) {
+	public static String getFileName(String template, String className, String packageName, String moduleName,String classname) {
 		String packagePath = "main" + File.separator + "java" + File.separator;
 		if (StringUtils.isNotBlank(packageName)) {
 			packagePath += packageName.replace(".", File.separator) + File.separator;
@@ -222,14 +225,19 @@ public class GenUtils {
 			return packagePath + "controller" + File.separator + moduleName + File.separator+className + "Controller.java";
 		}
 
-		if (template.contains("list.html.vm" )) {
+		if (template.contains("index.html.vm" )) {
 			return "main" + File.separator + "resources" + File.separator + "templates" + File.separator
-					+ "modules" + File.separator + moduleName + File.separator + className.toLowerCase() + ".html";
+					+ moduleName + File.separator + classname + File.separator + "index.html";
 		}
-
-		if (template.contains("list.js.vm" )) {
-			return "main" + File.separator + "resources" + File.separator + "statics" + File.separator + "js" + File.separator
-					+ "modules" + File.separator + moduleName + File.separator + className.toLowerCase() + ".js";
+		
+		if (template.contains("add.html.vm" )) {
+			return "main" + File.separator + "resources" + File.separator + "templates" + File.separator
+					+ moduleName + File.separator + classname + File.separator + "add.html";
+		}
+		
+		if (template.contains("edit.html.vm" )) {
+			return "main" + File.separator + "resources" + File.separator + "templates" + File.separator
+					+ moduleName + File.separator + classname + File.separator + "edit.html";
 		}
 
 		if (template.contains("menu.sql.vm" )) {

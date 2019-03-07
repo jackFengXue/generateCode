@@ -29,7 +29,7 @@ public class ${className}Service extends BaseServiceImpl {
 	 * @author ${author}
 	 * @createDate ${datetime}
 	 */   
-    public String add${className}(String data) {
+    public String add(String data) {
 		try {
 		    ${className} ${classname} = JSONObject.parseObject(data, ${className}.class); 
 		    ${classname}.set${pk.attrName}(getUUID());
@@ -46,7 +46,7 @@ public class ${className}Service extends BaseServiceImpl {
 	 * @author ${author}
 	 * @createDate ${datetime}
 	 */
-	public String delete${className}(String ${pk.columnName}s) {
+	public String delete(String ${pk.columnName}s) {
 		try {
 			if (${pk.columnName}s != null && ${pk.columnName}s.length() > 0) {
 				String[] ${pk.columnName}Array = ${pk.columnName}s.split(",");
@@ -69,7 +69,7 @@ public class ${className}Service extends BaseServiceImpl {
 	 * @author ${author}
 	 * @createDate ${datetime}
 	 */   
-    public String edit${className}(String data) {
+    public String edit(String data) {
 		try {
 		    ${className} ${classname} = JSONObject.parseObject(data, ${className}.class); 
 			${classname}Repository.save(${classname});
@@ -93,7 +93,7 @@ public class ${className}Service extends BaseServiceImpl {
 			String limitCondition = getLimit(page, limit); // 得到分页查询条件
 			String totalHql = "select ${pk.columnName} from ${databaseName}.${tableName} where 1 = 1 " + condition;
 			List<${className}> totalList = super.getDao().findBySql(totalHql, params.toArray(), ${className}.class); // 查询符合记录的总条数
-			String hql = "select * from ${databaseName}.${tableName} where 1 = 1 " + condition + " order by start_time desc "
+			String hql = "select * from ${databaseName}.${tableName} where 1 = 1 " + condition + " order by ${pk.columnName} desc "
 					+ limitCondition;// 查询符合记录的分页记录
 			List<${className}> list = super.getDao().findBySql(hql, params.toArray(), ${className}.class);
 			return makeObject(list, page, totalList); // 构造layui需要的数据对象
