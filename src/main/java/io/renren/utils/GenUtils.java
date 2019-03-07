@@ -31,6 +31,7 @@ import org.apache.velocity.app.Velocity;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -121,7 +122,7 @@ public class GenUtils {
 		Velocity.init(prop);
 
 		String mainPath = config.getString("mainPath" );
-		mainPath = StringUtils.isBlank(mainPath) ? "io.renren" : mainPath;
+		mainPath = StringUtils.isBlank(mainPath) ? "com.zggk" : mainPath;
 		
 		//封装模板数据
 		Map<String, Object> map = new HashMap<>();
@@ -137,7 +138,11 @@ public class GenUtils {
 		map.put("mainPath", mainPath);
 		map.put("package", config.getString("package" ));
 		map.put("moduleName", config.getString("moduleName" ));
-		map.put("author", config.getString("author"));
+		try {
+			map.put("author", new String(config.getString("author").getBytes("ISO8859-1"),"UTF-8"));
+		} catch (Exception e) {
+			map.put("author", "qingyun");
+		}
 		map.put("email", config.getString("email"));
 		map.put("databaseName", config.getString("databaseName"));
 		map.put("datetime", DateUtils.format(new Date(), DateUtils.DATE_TIME_PATTERN));

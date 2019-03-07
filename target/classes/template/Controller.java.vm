@@ -4,6 +4,10 @@ import ${package}.service.${moduleName}.${className}Service;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.platform.framework.controller.BaseController;
+import org.springframework.web.bind.annotation.RequestMethod;
+import javax.servlet.http.HttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 /**
  * @Description ${comments}
@@ -13,10 +17,78 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @RestController
 @RequestMapping("/${classname}")
-public class ${className}Controller {
+public class ${className}Controller extends BaseController{
 
     @Autowired
     ${className}Service ${classname}Service;
+    
+   /**
+	* @Description 跳转到添加${comments}页面的方法
+	* @author ${author}
+	* @createDate ${datetime}
+	*/
+    @RequestMapping(value = "/add${className}Page")
+	public ModelAndView add${className}Page() {
+		ModelAndView mv = new ModelAndView("${moduleName}/${classname}/add");
+		return mv;
+	}
+	
+    /**
+	 * @Description 保存添加${comments}的方法
+	 * @author ${author}
+	 * @createDate ${datetime}
+	 */
+	@RequestMapping(value="/add${className}",method= {RequestMethod.POST})
+	public String add${className}(HttpServletRequest request) {
+		String data = request.getParameter("data");
+		return ${classname}Service.add${className}(data);
+	}
+	
+	/**
+	 * @Description 根据主键${pk.columnName}删除记录的方法
+	 * @author ${author}
+	 * @createDate ${datetime}
+	 */
+	@RequestMapping(value="/delete${className}",method= {RequestMethod.POST})
+	public String delete${className}(HttpServletRequest request) {
+		String ${pk.columnName}s = request.getParameter("${pk.columnName}s");
+		return ${classname}Service.delete${className}(${pk.columnName}s);
+	}
+	
+    /**
+	 * @Description 跳转到编辑${comments}页面的方法
+	 * @author ${author}
+	 * @createDate ${datetime}
+	 */
+	@RequestMapping(value = "/edit${className}Page")
+	public ModelAndView edit${className}Page() {
+		ModelAndView mv = new ModelAndView("${moduleName}/${classname}/edit");
+		return mv;
+	}
+	
+	/**
+	 * @Description 保存编辑${comments}记录的方法
+	 * @author ${author}
+	 * @createDate ${datetime}
+	 */
+	@RequestMapping(value="/edit${className}",method= {RequestMethod.POST})
+	public String edit${className}(HttpServletRequest request) {
+		String data = request.getParameter("data");
+		return ${classname}Service.edit${className}(data);
+	}
+    
+    /**
+	 * @Description 查询${comments}列表
+	 * @author ${author}
+	 * @createDate ${datetime}
+	 */
+	@RequestMapping(value = "/list",method= {RequestMethod.POST})  
+	public Object list(HttpServletRequest request) throws Exception {
+	    String searchData = request.getParameter("searchData");    
+	    String page = request.getParameter("page");    
+	    String limit = request.getParameter("limit");    
+		return ${classname}Service.list(searchData,page,limit);
+	}
 
    
 }

@@ -5,6 +5,12 @@ import ${package}.dao.${moduleName}.${className}Repository;
 import com.platform.framework.service.BaseServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import com.alibaba.fastjson.JSONObject;
+import com.platform.common.bean.Message;
 
 /**
  * @Description ${comments}
@@ -17,7 +23,169 @@ public class ${className}Service extends BaseServiceImpl {
 
     @Autowired
     ${className}Repository ${classname}Repository;
+ 
+    /**
+	 * @Description 保存添加${comments}的方法
+	 * @author ${author}
+	 * @createDate ${datetime}
+	 */   
+    public String add${className}(String data) {
+		try {
+		    ${className} ${classname} = JSONObject.parseObject(data, ${className}.class); 
+		    ${classname}.set${pk.attrName}(getUUID());
+			${classname}Repository.save(${classname});
+			return new Message(Message.OK, "添加成功").toJson();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Message(Message.ERROR, "添加失败").toJson();
+		}
+	}
+	
+    /**
+	 * @Description 根据主键${pk.columnName}删除记录的方法
+	 * @author ${author}
+	 * @createDate ${datetime}
+	 */
+	public String delete${className}(String ${pk.columnName}s) {
+		try {
+			if (${pk.columnName}s != null && ${pk.columnName}s.length() > 0) {
+				String[] ${pk.columnName}Array = ${pk.columnName}s.split(",");
+				if (${pk.columnName}Array != null && ${pk.columnName}Array.length > 0) {
+					for (int i = 0; i < ${pk.columnName}Array.length; i++) {
+						${classname}Repository.delete(${pk.columnName}Array[i]);
+					}
+					return new Message(Message.OK, "删除成功").toJson();
+				}
+			}
+			return new Message(Message.ERROR, "删除失败").toJson();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Message(Message.ERROR, "删除失败").toJson();
+		}
+	}
+	
+	/**
+	 * @Description 保存编辑${comments}的方法
+	 * @author ${author}
+	 * @createDate ${datetime}
+	 */   
+    public String edit${className}(String data) {
+		try {
+		    ${className} ${classname} = JSONObject.parseObject(data, ${className}.class); 
+			${classname}Repository.save(${classname});
+			return new Message(Message.OK, "编辑成功").toJson();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new Message(Message.ERROR, "编辑失败").toJson();
+		}
+	}
     
+    /**
+	 * @Description ${comments}列表
+	 * @author ${author}
+	 * @createDate ${datetime}
+	 */
+	public Object list(String searchData, String page, String limit) {
+		try {
+			Map<String, Object> paramsCondition = getParams(searchData); // 得到查询条件的方法
+			List<Object> params = (List<Object>) paramsCondition.get("params");// 得到查询条件值集合
+			String condition = (String) paramsCondition.get("condition"); // 得到查询条件语句
+			String limitCondition = getLimit(page, limit); // 得到分页查询条件
+			String totalHql = "select ${pk.columnName} from ${databaseName}.${tableName} where 1 = 1 " + condition;
+			List<${className}> totalList = super.getDao().findBySql(totalHql, params.toArray(), ${className}.class); // 查询符合记录的总条数
+			String hql = "select * from ${databaseName}.${tableName} where 1 = 1 " + condition + " order by start_time desc "
+					+ limitCondition;// 查询符合记录的分页记录
+			List<${className}> list = super.getDao().findBySql(hql, params.toArray(), ${className}.class);
+			return makeObject(list, page, totalList); // 构造layui需要的数据对象
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	/**
+	 * @Description 构造layui需要的数据对象
+	 * @author ${author}
+	 * @createDate ${datetime}
+	 */
+	private Object makeObject(List<${className}> list, String page, List<${className}> totalList) {
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("code", 0);
+		jsonObject.put("msg", "");
+		jsonObject.put("count", totalList.size());
+		jsonObject.put("data", list.toArray());
+		return jsonObject;
+	}
+	
+	
+	/**
+	 * @Description 得到分页查询条件
+	 * @author ${author}
+	 * @createDate ${datetime}
+	 */
+	private String getLimit(String page, String limit) {
+		if (page != null && page.length() > 0 && limit != null && limit.length() > 0) {
+			return " limit " + (Integer.parseInt(page) - 1) * Integer.parseInt(limit) + " , " + Integer.parseInt(limit);
+		} else {
+			return "";
+		}
+	}
     
+    /**
+	 * @Description 得到查询条件的方法
+	 * @author ${author}
+	 * @createDate ${datetime}
+	 */
+	public Map<String, Object> getParams(String searchData) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		List<Object> params = new ArrayList<Object>();
+		String condition = "";
+		if (searchData != null) {
+			JSONObject object = JSONObject.parseObject(searchData);
+			int rowLength = object.getInteger("rowLength");
+			if (rowLength > 0) {
+				for (int i = 0; i < rowLength; i++) {
+					String conditionField = object.getString("QueryCondition[" + i + "].conditionField"); // 字段
+					String conditionOption = object.getString("QueryCondition[" + i + "].conditionOption"); // 条件（有like、equal、between三种）
+					String conditionValue = object.getString("QueryCondition[" + i + "].conditionValue"); // 查询值
+					if (conditionField != null && conditionField.length() > 0 && conditionOption != null
+							&& conditionOption.length() > 0) {
+						switch (conditionOption) {
+						case "like":
+							if (conditionValue != null && conditionValue.length() > 0) { // 字段不为空、条件为like、值不为空，拼接查询条件，把查询值存到条件集合中
+								condition += " and " + conditionField + " like ? ";
+								params.add("%" + conditionValue + "%");
+							}
+							break;
+						case "equal":
+							if (conditionValue != null && conditionValue.length() > 0) { // 字段不为空、条件为equal、值不为空，拼接查询条件，把查询值存到条件集合中
+								condition += " and " + conditionField + " = ? ";
+								params.add(conditionValue);
+							}
+							break;
+						case "between": // 在之间的时候，获取左右两边的值
+							String conditionValueLeft = object
+									.getString("QueryCondition[" + i + "].conditionValueLeft"); // 查询左值（适用于条件为between）
+							String conditionValueRight = object
+									.getString("QueryCondition[" + i + "].conditionValueRight"); // 查询右值（适用于条件为between）
+							if (conditionValueLeft != null && conditionValueLeft.length() > 0) { // 字段不为空、条件为between、值不为空，拼接查询条件，把查询值存到条件集合中
+								condition += " and " + conditionField + " >= ? ";
+								params.add(conditionValueLeft);
+							}
+							if (conditionValueRight != null && conditionValueRight.length() > 0) { // 字段不为空、条件为between、值不为空，拼接查询条件，把查询值存到条件集合中
+								condition += " and " + conditionField + " <= ? ";
+								params.add(conditionValueRight);
+							}
+							break;
+						default:
+							break;
+						}
+					}
+				}
+			}
+		}
+		map.put("params", params);
+		map.put("condition", condition);
+		return map;
+	}
 }
 
