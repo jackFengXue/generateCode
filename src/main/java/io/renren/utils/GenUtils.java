@@ -54,7 +54,7 @@ public class GenUtils {
 		templates.add("template/index.html.vm");
 		templates.add("template/add.html.vm");
 		templates.add("template/edit.html.vm");
-		templates.add("template/menu.sql.vm");
+		templates.add("template/index.txt.vm");
 		return templates;
 	}
 	
@@ -240,8 +240,8 @@ public class GenUtils {
 					+ moduleName + File.separator + classname + File.separator + "edit.html";
 		}
 
-		if (template.contains("menu.sql.vm" )) {
-			return className.toLowerCase() + "_menu.sql";
+		if (template.contains("index.txt.vm" )) {
+			return className.toLowerCase() + "_index.txt";
 		}
 
 		return null;
